@@ -24,7 +24,16 @@ def rmse(train_csv, w, N):
   Y = np.vstack(np.array(gaps)).T
   X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T
   Y_hat = np.dot(X, w).T
-  return np.sqrt((np.sum(np.square(Y - Y_hat))) / N)
+
+  total_error = 0
+  print Y.shape
+  error = (Y - np.dot(X, w).T)**2
+  print error.shape
+  for x in error[0]:
+    total_error += x
+  rmse = (total_error / N)**0.5
+  return rmse
+  # return np.sqrt((np.sum(np.square(Y - Y_hat))) / N)
 
 def ridge_regression(N):
   train_filename = 'train.csv.gz'
