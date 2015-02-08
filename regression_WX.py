@@ -1,6 +1,7 @@
 import csv
 import gzip
 import numpy as np
+import math
 
 train_filename = 'train.csv.gz'
 test_filename  = 'test.csv.gz'
@@ -45,11 +46,15 @@ w = np.linalg.solve(np.dot(X.T, X)+lam*np.identity(X.T.shape[0]), np.dot(X.T, ga
 # Calculate the root square means
 
 total_error = 0
-print gaps[0]
-print w.T.shape
-print w.shape
-# for x in range(0, N):
-#     total_error += (gaps[x] - w.T*X[x])**2
+error = (gaps - np.dot(X, w))**2
+for x in error:
+    total_error += x
+rmse = (total_error/N)**0.5
+print rmse   
+
+
+
+    
 
 # print total_error
 
