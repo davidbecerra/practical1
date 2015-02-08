@@ -8,7 +8,7 @@ def read_data(train_csv, N):
   all_features = []
   # Load the data.
   for row in train_csv:
-    if N == 1000: print row[0]
+    # if N == 1000: print row[0]
     # Grab the feature data
     features = np.array([float(x) for x in row[1:257]])
     all_features.append(features)
@@ -23,7 +23,7 @@ def rmse(train_csv, w, N):
   gaps, features = read_data(train_csv, N)
   Y = np.vstack(np.array(gaps)).T
   X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T
-  Y_hat = np.dot(X, w)
+  Y_hat = np.dot(X, w).T
   return np.sqrt((np.sum(np.square(Y - Y_hat))) / N)
 
 def ridge_regression(N):
@@ -43,12 +43,13 @@ def ridge_regression(N):
     gaps = data[0]
     features = data[1]
     # Compute the ridge regression parameters
-    lam = 0.0001
+    lam = 0.5
     Y = np.vstack(np.array(gaps)) # N x 1
-    X = (np.vstack(tuple(features))) # N x J (where J = # features)
-    w = np.linalg.solve(np.dot(X.T, X) + lam * np.identity(256), np.dot(X.T, Y))
-    w0 = np.sum(Y) / Y.shape[0] # compute w0 as sample mean of training data
-    w = np.vstack(np.insert(w, 0, w0)) # (J+1) x 1
+    X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T
+    # X = (np.vstack(tuple(features))) # N x J (where J = # features)
+    w = np.linalg.solve(np.dot(X.T, X) + lam * np.identity(257), np.dot(X.T, Y))
+    # w0 = np.sum(Y) / Y.shape[0] # compute w0 as sample mean of training data
+    # w = np.vstack(np.insert(w, 0, w0)) # (J+1) x 1
     return rmse(train_csv, w, N)
 
 if __name__ == "__main__":
