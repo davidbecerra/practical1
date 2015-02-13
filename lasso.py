@@ -1,6 +1,7 @@
 import csv
 import gzip
 import numpy as np
+from sklearn.linear_model import Lasso
 
 train_filename = 'train.csv.gz'
 test_filename  = 'test.csv.gz'
@@ -101,13 +102,44 @@ def lasso(N):
     features = data[1]
     Y = np.vstack(np.array(gaps)) # N x 1
     X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T # N x (J+1 = 257)
+
     # X = np.vstack(tuple(features))
     # LARS(X, Y)
     w = forward_stagewise(X, Y)
     return rmse(train_csv, w, N)
 
+def real_lasso(N):
+  # Load the training file
+  with gzip.open(train_filename, 'r') as train_fh:
+    # Parse it as a CSV file.
+    train_csv = csv.reader(train_fh, delimiter=',', quotechar='"')
+    
+    # Skip the header row.
+    next(train_csv, None)
+    data = read_data(train_csv, N)
+    gaps = data[0]
+    features = data[1]
+    Y = np.vstack(np.array(gaps)) # N x 1
+    X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T # N x (J+1 = 257)
+
+    # Get test data
+    data = read_data(train_csv, N)
+    X_test = (np.vstack((np.ones(N), (np.vstack(tuple(data[1]))).T))).T
+    Y_test = np.vstack(np.array(data[0]))
+
+    lasso_reg = Lasso(alpha = 0.01)
+    Y_hat = np.vstack(lasso_reg.fit(X, Y).predict(X_test))
+    return np.sqrt((np.sum(np.square(Y_test - Y_hat))) / N)
+
 if __name__ == "__main__":
-  print lasso(1000)
+      # lasso_reg = Lasso(alpha = 0.4)
+    # data = read_data(train_csv, N)
+    # X_predict = (np.vstack((np.ones(N), (np.vstack(tuple(data[1]))).T))).T
+    # Y = np.vstack(np.array(data[0]))
+    # Y_hat = lasso_reg.fit(X, Y).predict(X_predict)
+    # return np.sqrt((np.sum(np.square(Y - Y_hat))) / N)
+  print real_lasso(1000)
+  # print lasso(1000)
 
 
 
