@@ -12,6 +12,65 @@ from rdkit.Chem import MACCSkeys
 from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit.Chem.rdMolChemicalFeatures import *
 
+from sklearn import linear_model
+from sklearn import svm
+
+'''
+Linear Regression
+'''
+# clf = linear_model.LinearRegresion()
+# clf.fit([X], [y])
+# clf.coef_
+
+'''
+Ridge Regression
+'''
+# clf = linear_model.Ridge(alpha = .5)
+# clf.fit([X], [y])
+# w is represented as below:
+# clf.coef_ 
+
+'''
+Ridge Regression with Cross Validation
+'''
+#clf = linear_model.RidgeCV(alphas=[lam])
+#clf.fit([X], [y])
+# The optimal alpha/lam value is represented by below
+#clf.alpha_
+
+'''
+Lasso Regression
+'''
+#clf = linear_model.Lasso(alpha=0.1)
+#clf.fit([X], [y])
+
+'''
+ElasticNet
+'''
+# clf = linear_model.ElasticNetCV(alpha, l1_ratio)
+
+'''
+BayesianRidge
+Default:
+alpha_1 = 1**-6 
+alpha_2 = 1**-6 
+lambda_1 = 1**-6 
+lambda_2 = 1**-6 
+'''
+# X = [[0,0], [1,1]]
+# Y = [0,1,2,...]
+# clf = linear_model.BayesianRidge()
+# clf.fit(X, Y)
+# clf.predict([X])
+# clf.coef_
+
+'''
+Support Vector Regression
+'''
+clf = svm.SVR()
+clf.fit(X,y)
+clf.predict([[]])
+
 def read_data(train_csv, N):
 	smiles = []
 	gaps = []
@@ -73,7 +132,7 @@ def cross_validation(all_gaps, all_features, N):
 	if lam_err/N < min_lam_err:
 	  min_lam_err = lam_err/N
 	  lam -= .07
-	  print lam
+	  print min_lam_err
 	else:
 	  break
 
@@ -109,13 +168,15 @@ def predict(N, w):
 		# Parse it as a CSV file.
 
 		test_csv = csv.reader(test_fh, delimiter=',', quotechar='"')
-		with open('results_final.csv', 'w') as results_file:
+		#for x in range(0, 800000):
+			#next(test_csv, None)
+		with open('results.csv', 'w') as results_file:
 		# Grab the data.
 			results_model = csv.writer(results_file, delimiter=',', quotechar='"')
 			results_model.writerow(["Id"] + ["Prediction"])
 			next(test_csv, None)
 			for row in test_csv:
-				#Grab Features
+				#Grab Features 
 				features = np.array([float(x) for x in row[1:1025]])
 				#X = np.vstack(((1), (tuple(features)))).T
 				#X = (np.vstack((np.ones(1), (np.vstack(tuple(features))).T))).T
@@ -133,5 +194,5 @@ def predict(N, w):
 		return 0
 
 if __name__ == "__main__":
-	w = ridge_plus_validation(25000)
+	w = ridge_plus_validation(50000)
 	predict(900000, w)
