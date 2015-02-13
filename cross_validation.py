@@ -135,4 +135,4 @@ def ridge_plus_validation(N):
     return rmse_new_data(train_csv, w, N)
 
 if __name__ == "__main__":
-  print ridge_plus_validation(40000)
+  print ridge_plus_validation(100000)
