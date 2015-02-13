@@ -1,5 +1,4 @@
 *.csv
-*.gz
 *.pdf
 example_mean.py
 .DS_Store
