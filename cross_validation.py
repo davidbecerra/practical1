@@ -7,7 +7,6 @@ def read_data(train_csv, N):
   all_features = []
   # Load the data.
   for row in train_csv:
-    # if N == 1000: print row[0]
     # Grab the feature data
     features = np.array([float(x) for x in row[1:257]])
     all_features.append(features)
@@ -18,8 +17,32 @@ def read_data(train_csv, N):
     if N == 0: break
   return (gaps, all_features)
 
+def read_data_test(train_csv, N):
+  gaps = []
+  all_features = []
+  old_N = N
+  # Load the data.
+  for row in train_csv:
+    if N <= (old_N/2):
+      # Grab the feature data
+      features = np.array([float(x) for x in row[1:257]])
+      all_features.append(features)
+      # Grab the Homo-Lumo gap data
+      gap = float(row[257])
+      gaps.append(gap)
+    N -= 1
+    if N == 0: break
+  return (gaps, all_features)
+
 def rmse(train_csv, w, N):
   gaps, features = read_data(train_csv, N)
+  Y = np.vstack(np.array(gaps)).T
+  X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T
+  Y_hat = np.dot(X, w).T
+  return np.sqrt((np.sum(np.square(Y - Y_hat))) / N)
+
+def rmse_new_data(train_csv, w, N):
+  gaps, features = read_data_test(train_csv, 2*N)
   Y = np.vstack(np.array(gaps)).T
   X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T
   Y_hat = np.dot(X, w).T
@@ -51,7 +74,7 @@ def ridge_regression(N):
     return rmse(train_csv, w, N)
 
 def cross_validation(all_gaps, all_features, N):
-  lam = 1
+  lam = .5
   min_lam_err = float("inf")
   while True:
     print "start"
@@ -77,13 +100,13 @@ def cross_validation(all_gaps, all_features, N):
       test_Y = np.vstack(np.array(test_gaps)).T
       test_X = (np.vstack((np.ones(N/5), (np.vstack(tuple(test_features))).T))).T
       Y_hat = np.dot(test_X, w).T
-      lam_err += np.sum(np.square(Y - Y_hat))
+      lam_err += np.sum(np.square(test_Y - Y_hat))
     
     if lam_err/N < min_lam_err:
       min_lam_err = lam_err/N
-      lam += 150
       print lam
       print min_lam_err
+      lam -= .07
     else:
       break
 
@@ -109,7 +132,7 @@ def ridge_plus_validation(N):
     Y = np.vstack(np.array(gaps))
     X = (np.vstack((np.ones(N), (np.vstack(tuple(features))).T))).T
     w = np.linalg.solve(np.dot(X.T, X) + lam * np.identity(257), np.dot(X.T, Y))
-    return rmse(train_csv, w, N)
+    return rmse_new_data(train_csv, w, N)
 
 if __name__ == "__main__":
-  print ridge_plus_validation(25000)
+  print ridge_plus_validation(40000)
